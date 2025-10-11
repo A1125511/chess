@@ -4,6 +4,7 @@ import random
 from board import ChessBoard
 from draw_board import DrawChessBoard
 from piece_view import Pieces_view
+from promotion_menu import Promotion_menu
 
 pygame.init()
 
@@ -28,9 +29,12 @@ running = True
 selected_piece = None
 is_drag = False
 selected_pos = None
-target_piece = None
 picked_up = None
 marked_positions = []
+promotion_pos = None
+promotion_color = None
+promotion_pending = False
+new_piece = None
 
 def get_board_position():
     mouseX, mouseY = pygame.mouse.get_pos()
@@ -46,7 +50,18 @@ def get_board_position():
 while running:
     for event in pygame.event.get():
 
-        if event.type == pygame.MOUSEBUTTONDOWN:
+        if promotion_pending and event.type == pygame.KEYDOWN:
+            key_name = pygame.key.name(event.key)
+            new_piece = Promotion_menu.show(promotion_color, key_name)
+            if new_piece:
+                promotion_pending = False
+                r, c = promotion_pos
+                board[r][c] = new_piece
+                promotion_pos = None
+                promotion_color = None
+                promotion_pending = False
+
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             marked_positions = []
             mouseX, mouseY = pygame.mouse.get_pos()
             row, col = get_board_position()
@@ -81,16 +96,26 @@ while running:
                 if 0 <= mouseX < WIDTH and 0 <= mouseY < HEIGHT:
                     if selected_piece:
                         print(selected_piece.color)
-                        target_piece = board[row][col]
-                        if selected_piece.is_valid_move(board, (start_row, start_col), (row, col)):
-                            print(f"\n[Movement is valid]\n")
-                            is_drag = None
-                            selected_pos = None
-                        else:
+                        result = selected_piece.is_valid_move(board, (start_row, start_col), (row, col))
+                        if not result:
                             print(f"\n[Movement is invalid]\n")
                             board[start_row][start_col] = selected_piece
+                        else:
+                            
+                            print(f"\n[Movement is valid]\n")
+                            is_drag = False
+                            selected_pos = None
+                        
+                        if result == "promotion":
+                            promotion_pending = True
+                            promotion_pos = (row, col)
+                            promotion_color = selected_piece.color
+                            board[row][col] = selected_piece
+                            print(f"{selected_piece.color} 到達升變格，等待升變輸入...")
+                            
                         print(f"{selected_piece.name}")
                         selected_piece = None
+                        
                 else:
                     board[start_row][start_col] = selected_piece
                     selected_piece = None

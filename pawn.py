@@ -31,6 +31,8 @@ class Pawn(Piece):
                 promotion = rule.check_promotion(board, end_row, end_col, self.color)
                 board[end_row][end_col] = self
                 board[start_row][start_col] = ""
+                if promotion:
+                    return "promotion"
                 return True
         
         # 移動
@@ -41,6 +43,8 @@ class Pawn(Piece):
                 rule.set_current_enpassant(None, None)
                 board[end_row][end_col] = self
                 board[start_row][start_col] = ""
+                if promotion:
+                    return "promotion"
                 return True
         
         # 吃
@@ -57,6 +61,8 @@ class Pawn(Piece):
                 promotion = rule.check_promotion(board, end_row, end_col, self.color)
                 board[end_row][end_col] = self
                 board[start_row][start_col] = ""
+                if promotion:
+                    return "promotion"
                 return True    
             elif en_passant:
                 print(f"吃過路兵 {target}")
