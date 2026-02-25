@@ -2,8 +2,8 @@ import board
 from piece import Piece
 
 class Bishop(Piece):
-    def __init__(self, color):
-        super().__init__(color, "B")
+    def __init__(self, color, position):
+        super().__init__(color, "B", position, False)
 
     def is_valid_move(self, board, start, end):
         start_row, start_col = start
@@ -11,6 +11,9 @@ class Bishop(Piece):
 
         dx = end_row - start_row
         dy = end_col - start_col
+
+        if start == end:
+            return False
 
         if dx * dx == dy * dy:
             step_x = 1 if end_row > start_row else -1
@@ -30,9 +33,14 @@ class Bishop(Piece):
             if board[end_row][end_col] != "" and board[end_row][end_col].color == self.color:
                 return False
 
-            board[end_row][end_col] = self
-            board[start_row][start_col] = ""
             return True
 
         return False
             
+    def move(self, board, start, end):
+        start_row, start_col = start
+        end_row, end_col = end
+        
+        board[end_row][end_col] = self
+        board[start_row][start_col] = ""
+        self.has_moved = True

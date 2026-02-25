@@ -5,6 +5,8 @@ from board import ChessBoard
 from draw_board import DrawChessBoard
 from piece_view import Pieces_view
 from promotion_menu import Promotion_menu
+from game_state import GameState
+# from path_show import path_show
 
 pygame.init()
 
@@ -16,6 +18,7 @@ pygame.display.set_caption("chess")
 
 WHITE = (255,255,255)
 DARKGRAY = (169,169,169)
+GRAY_OVERLAY = (0, 0, 0, 180)
 DRAG_THRESHOLD = 5
 
 #is_white_perspective = random.choice([True, False])
@@ -24,6 +27,8 @@ is_white_perspective = True
 chessboard = DrawChessBoard(lattice_num, WIDTH, HEIGHT)
 pieces_view = Pieces_view(lattice_num, WIDTH, HEIGHT)
 board = ChessBoard().classic_board()
+
+currentPlayer = GameState().getCurrentPlayer()
 
 running = True
 selected_piece = None
@@ -34,23 +39,46 @@ marked_positions = []
 promotion_pos = None
 promotion_color = None
 promotion_pending = False
+promotion_need = None
 new_piece = None
 
 def get_board_position():
     mouseX, mouseY = pygame.mouse.get_pos()
     col = mouseX // (WIDTH // lattice_num)
     row = mouseY // (WIDTH // lattice_num)
-    if is_white_perspective:
+    if currentPlayer:
         row, col = row, col
     else:
         row, col = 7 - row, 7 - col
 
     return row, col
 
+def show_promotion_menu(color):
+    """
+    Docstring for show_promotion_menu
+    """
+    overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    overlay.fill(GRAY_OVERLAY)
+    screen.blit(overlay, (0, 0))
+
+    icon_size = 100
+    gap = 20
+    total_width = (icon_size*4) + (gap*3)
+    start_x = (WIDTH - total_width) // 2
+    start_y = (HEIGHT - icon_size) // 2
+
+    options = []
+
+    selected_piece = None
+
 while running:
     for event in pygame.event.get():
 
         if promotion_pending and event.type == pygame.KEYDOWN:
+            print("q:Queen")
+            print("b:Bishop")
+            print("n:Knight")
+            print("r:Rook\n")
             key_name = pygame.key.name(event.key)
             new_piece = Promotion_menu.show(promotion_color, key_name)
             if new_piece:
@@ -61,72 +89,81 @@ while running:
                 promotion_color = None
                 promotion_pending = False
 
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            marked_positions = []
-            mouseX, mouseY = pygame.mouse.get_pos()
-            row, col = get_board_position()
+        if not promotion_pending:
 
-            if event.button == 1:
-                if board[row][col] != '':
-                    selected_piece = board[row][col]
-                    start_row, start_col = row, col
-                    is_drag = False
-                    picked_up = (row, col)
-                    selected_pos = (mouseX, mouseY)
-            
-            if event.button == 3: # not finish
-                if (row, col) in marked_positions:
-                    marked_positions.remove((row, col))
-                else:
-                    marked_positions.append((row, col))
-                
-        elif event.type == pygame.MOUSEMOTION:
-            if selected_piece and selected_pos:
-                current_pos = pygame.mouse.get_pos()
-                distance = ((current_pos[0] - selected_pos[0]) ** 2 + 
-                            (current_pos[1] - selected_pos[1]) ** 2) ** 0.5
-                
-                if distance > DRAG_THRESHOLD and not is_drag:
-                    is_drag = True
-
-        elif event.type == pygame.MOUSEBUTTONUP:
-            if event.button == 1:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                marked_positions = []
                 mouseX, mouseY = pygame.mouse.get_pos()
                 row, col = get_board_position()
-                if 0 <= mouseX < WIDTH and 0 <= mouseY < HEIGHT:
-                    if selected_piece:
-                        print(selected_piece.color)
-                        result = selected_piece.is_valid_move(board, (start_row, start_col), (row, col))
-                        if not result:
-                            print(f"\n[Movement is invalid]\n")
-                            board[start_row][start_col] = selected_piece
-                        else:
+
+                if event.button == 1:
+                    if board[row][col] != '':
+                        selected_piece = board[row][col]
+                        start_row, start_col = row, col
+                        is_drag = False
+                        picked_up = (row, col)
+                        selected_pos = (mouseX, mouseY)
+                
+                if event.button == 3: # not finish
+                    if (row, col) in marked_positions:
+                        marked_positions.remove((row, col))
+                    else:
+                        marked_positions.append((row, col))
+                    
+            elif event.type == pygame.MOUSEMOTION:
+                if selected_piece and selected_pos:
+                    current_pos = pygame.mouse.get_pos()
+                    distance = ((current_pos[0] - selected_pos[0]) ** 2 + 
+                                (current_pos[1] - selected_pos[1]) ** 2) ** 0.5
+                    
+                    if distance > DRAG_THRESHOLD and not is_drag:
+                        is_drag = True
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                    mouseX, mouseY = pygame.mouse.get_pos()
+                    row, col = get_board_position()
+                    if 0 <= mouseX < WIDTH and 0 <= mouseY < HEIGHT:
+                        if selected_piece:
+
+                            # Under modification
+                            # valid_moves = path_show(selected_piece, board, (start_row, start_col), (row, col))
+                            # path_show(selected_piece, board, (start_row, start_col), (row, col))
                             
-                            print(f"\n[Movement is valid]\n")
-                            is_drag = False
-                            selected_pos = None
-                        
-                        if result == "promotion":
-                            promotion_pending = True
-                            promotion_pos = (row, col)
-                            promotion_color = selected_piece.color
-                            board[row][col] = selected_piece
-                            print(f"{selected_piece.color} 到達升變格，等待升變輸入...")
+
+                            # print(selected_piece.color)
+                            valid_move = selected_piece.is_valid_move(board, (start_row, start_col), (row, col))
+                            if not valid_move:
+                                # print(f"\n[Movement is invalid]\n")
+                                board[start_row][start_col] = selected_piece
+                            else:
+                                # print(f"\n[Movement is valid]\n")
+                                result = selected_piece.move(board, (start_row, start_col), (row, col))
+                                is_drag = False
+                                selected_pos = None
                             
-                        print(f"{selected_piece.name}")
+                            if result == "promotion":
+                                promotion_pending = True
+                                promotion_pos = (row, col)
+                                promotion_color = selected_piece.color
+                                board[row][col] = selected_piece
+                                print(f"{selected_piece.color} 到達升變格，等待升變輸入...")
+                                
+                            print(f"{selected_piece.name}")
+                            # print(f"{selected_piece.initial_position}")
+                            selected_piece = None
+                            
+                    else:
+                        board[start_row][start_col] = selected_piece
                         selected_piece = None
-                        
-                else:
-                    board[start_row][start_col] = selected_piece
-                    selected_piece = None
 
         if event.type == pygame.QUIT:
             running = False
     
     
     chessboard.draw(screen, WHITE, DARKGRAY)
-    chessboard.marked_draw(screen, marked_positions,is_white_perspective, radius = WIDTH // lattice_num // 2) 
-    pieces_view.draw_pieces(screen, board, is_white_perspective, picked_up, selected_piece)
+    chessboard.marked_draw(screen, marked_positions,currentPlayer, radius = WIDTH // lattice_num // 2) 
+    pieces_view.draw_pieces(screen, board, currentPlayer, picked_up, selected_piece)
     pygame.display.flip()
     
 pygame.quit()

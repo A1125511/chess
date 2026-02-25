@@ -1,8 +1,8 @@
 from piece import Piece
 
 class Queen(Piece):
-    def __init__(self, color):
-        super().__init__(color, "Q")
+    def __init__(self, color, position):
+        super().__init__(color, "Q", position, False)
     
     def is_valid_move(self, board, start, end):
         start_row, start_col = start
@@ -10,6 +10,9 @@ class Queen(Piece):
 
         dx = end_row - start_row
         dy = end_col - start_col
+
+        if start == end:
+            return False
 
         if start_row == end_row or start_col == end_col:
             
@@ -27,10 +30,7 @@ class Queen(Piece):
             if board[end_row][end_col] != "" and board[end_row][end_col].color == self.color:
                 return False
 
-            board[end_row][end_col] = self
-            board[start_row][start_col] = ""
-            if start != end:
-                return True
+            return True
 
         if dx * dx == dy * dy:
             
@@ -47,8 +47,15 @@ class Queen(Piece):
             if board[end_row][end_col] != "" and board[end_row][end_col].color == self.color:
                 return False
             
-            board[end_row][end_col] = self
-            board[start_row][start_col] = ""
             return True
         
         return False
+
+    def move(self, board, start, end):
+        start_row, start_col = start
+        end_row, end_col = end
+        
+        board[end_row][end_col] = self
+        board[start_row][start_col] = ""
+        self.has_moved = True
+    

@@ -18,3 +18,4 @@ class Rule:
       elif color == "b" and end_row == len(board) - 1:
          return True
       return False
+   

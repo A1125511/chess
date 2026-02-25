@@ -1,14 +1,19 @@
 from piece import Piece
+from rule import Rule
+
+rule = Rule()
 
 class Rook(Piece):
-    def __init__(self, color):
-        super().__init__(color, "R")
-        self.first_move = True
+    def __init__(self, color, position):
+        super().__init__(color, "R", position, False)
 
     def is_valid_move(self, board, start, end):
         start_row, start_col = start
         end_row, end_col = end
 
+        if start == end:
+            return False
+            
         # move
         if start_row == end_row or end_col == start_col:
             # check path
@@ -26,12 +31,15 @@ class Rook(Piece):
             # capture
             if board[end_row][end_col] != "" and board[end_row][end_col].color == self.color:
                 return False
-
-            board[end_row][end_col] = self
-            board[start_row][start_col] = ""
-
-            if start != end:
-                self.first_move = False
-                return True
+            
+            return True
 
         return False
+
+    def move(self, board, start, end):
+        start_row, start_col = start
+        end_row, end_col = end
+        
+        board[end_row][end_col] = self
+        board[start_row][start_col] = ""
+        self.has_moved = True
