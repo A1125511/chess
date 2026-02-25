@@ -43,7 +43,7 @@ class King(Piece):
                 self.has_moved = True
 
                 board[rook_row][rook_col] = ""
-                if step == 1:
+                if step == -1:
                     board[rook_row][end_col + 1] = rook
                 else:
                     board[rook_row][end_col - 1] = rook
@@ -61,7 +61,7 @@ class King(Piece):
         dy = end_col - start_col
     
         if self.has_moved:
-            return False
+            return False, None, None, None, None
 
         if dy == 2:
             rook_col = 7
@@ -72,12 +72,12 @@ class King(Piece):
         rook = board[rook_row][rook_col]
 
         if rook == "" or rook.name != "R" or rook.has_moved:
-            return False
-        
-        step = 1 if dy == -2 else -1
-        for col in range(start_col + step, end_col, step):
+            return False, None, None, None, None
+            
+        step = -1 if dy == -2 else 1
+        for col in range(start_col + step, rook_col, step):
             if board[end_row][col] != "":
-                return False
+                return False, None, None, None, None
 
         return True, rook_col, rook_row, step, rook
 

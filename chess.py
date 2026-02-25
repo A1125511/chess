@@ -6,7 +6,7 @@ from draw_board import DrawChessBoard
 from piece_view import Pieces_view
 from promotion_menu import Promotion_menu
 from game_state import GameState
-# from path_show import path_show
+from path_show import path_show
 
 pygame.init()
 
@@ -41,6 +41,7 @@ promotion_color = None
 promotion_pending = False
 promotion_need = None
 new_piece = None
+result = None
 
 def get_board_position():
     mouseX, mouseY = pygame.mouse.get_pos()
@@ -127,9 +128,9 @@ while running:
                         if selected_piece:
 
                             # Under modification
-                            # valid_moves = path_show(selected_piece, board, (start_row, start_col), (row, col))
+                            valid_path = path_show(selected_piece, board, (start_row, start_col), (row, col))
                             # path_show(selected_piece, board, (start_row, start_col), (row, col))
-                            
+                            chessboard.valid_path_draw(screen, valid_path)
 
                             # print(selected_piece.color)
                             valid_move = selected_piece.is_valid_move(board, (start_row, start_col), (row, col))

@@ -26,4 +26,9 @@ class DrawChessBoard:
             center = (col * self.square_size + self.square_size // 2, row * self.square_size + self.square_size // 2)
             pygame.draw.circle(screen, (192, 255, 192), center, radius, 5)
     
+    def valid_path_draw(self, screen, valid_path):
+        for pos in valid_path:
+            row, col = pos
+            center = (col * self.square_size + self.square_size // 2, row * self.square_size + self.square_size // 2)
+            pygame.draw.circle(screen, (192, 255, 192), center, 1, 5)
         
