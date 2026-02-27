@@ -1,3 +1,5 @@
+# Not using this class
+
 class Rule:
    def __init__(self):
       self.en_passant_target = None

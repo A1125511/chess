@@ -17,7 +17,7 @@ class King(Piece):
         if start == end:
             return False
 
-        if dy == 2 or dy == -2:
+        if dx == 0 and (dy == 2 or dy == -2):
             castling_allowed, rook_col, rook_row, step, rook = self.castling(board, start, end)
             if castling_allowed:
                 return True
@@ -35,7 +35,7 @@ class King(Piece):
         dx = end_row - start_row
         dy = end_col - start_col
 
-        if dy == 2 or dy == -2:
+        if dx == 0 and (dy == 2 or dy == -2):
             castling_allowed, rook_col, rook_row, step, rook = self.castling(board, start, end)
             if castling_allowed:
                 board[end_row][end_col] = self

@@ -42,6 +42,7 @@ promotion_pending = False
 promotion_need = None
 new_piece = None
 result = None
+valid_path = []
 
 def get_board_position():
     mouseX, mouseY = pygame.mouse.get_pos()
@@ -89,13 +90,14 @@ while running:
                 promotion_pos = None
                 promotion_color = None
                 promotion_pending = False
+                result = None
 
         if not promotion_pending:
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 marked_positions = []
                 mouseX, mouseY = pygame.mouse.get_pos()
-                row, col = get_board_position()
+                row, col = get_board_position()                
 
                 if event.button == 1:
                     if board[row][col] != '':
@@ -104,6 +106,8 @@ while running:
                         is_drag = False
                         picked_up = (row, col)
                         selected_pos = (mouseX, mouseY)
+
+                        valid_path = path_show(selected_piece, board, (start_row, start_col), (row, col))                        
                 
                 if event.button == 3: # not finish
                     if (row, col) in marked_positions:
@@ -122,15 +126,17 @@ while running:
 
             elif event.type == pygame.MOUSEBUTTONUP:
                 if event.button == 1:
+                    valid_path = []
+                    
                     mouseX, mouseY = pygame.mouse.get_pos()
                     row, col = get_board_position()
                     if 0 <= mouseX < WIDTH and 0 <= mouseY < HEIGHT:
                         if selected_piece:
 
                             # Under modification
-                            valid_path = path_show(selected_piece, board, (start_row, start_col), (row, col))
+                            
                             # path_show(selected_piece, board, (start_row, start_col), (row, col))
-                            chessboard.valid_path_draw(screen, valid_path)
+                            
 
                             # print(selected_piece.color)
                             valid_move = selected_piece.is_valid_move(board, (start_row, start_col), (row, col))
@@ -161,10 +167,11 @@ while running:
         if event.type == pygame.QUIT:
             running = False
     
-    
     chessboard.draw(screen, WHITE, DARKGRAY)
-    chessboard.marked_draw(screen, marked_positions,currentPlayer, radius = WIDTH // lattice_num // 2) 
+    chessboard.marked_draw(screen, marked_positions,currentPlayer, radius = WIDTH // lattice_num // 2)
+    chessboard.valid_path_draw(screen, valid_path, board)
     pieces_view.draw_pieces(screen, board, currentPlayer, picked_up, selected_piece)
+    
     pygame.display.flip()
     
 pygame.quit()
