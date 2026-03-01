@@ -8,6 +8,7 @@ from piece_view import Pieces_view
 from promotion_menu import Promotion_menu
 from game_state import GameState
 from path_show import path_show
+from rule import Rule
 
 pygame.init()
 
@@ -27,6 +28,7 @@ chessboard = DrawChessBoard(lattice_num, WIDTH, HEIGHT)
 pieces_view = Pieces_view(lattice_num, WIDTH, HEIGHT)
 board = ChessBoard().classic_board()
 
+rule = Rule()
 game_state = GameState()
 currentPlayer = game_state.getCurrentPlayer()
 
@@ -108,12 +110,15 @@ while running:
                 if event.button == 1:
                     if board[row][col] != '':
                         selected_piece = board[row][col]
-                        start_row, start_col = row, col
-                        is_drag = False
-                        picked_up = (row, col)
-                        selected_pos = (mouseX, mouseY)
+                        if rule.player_turn(selected_piece.color):
+                            start_row, start_col = row, col
+                            is_drag = False
+                            picked_up = (row, col)
+                            selected_pos = (mouseX, mouseY)
 
-                        valid_path = path_show(selected_piece, board, (start_row, start_col), (row, col))                        
+                            valid_path = path_show(selected_piece, board, (start_row, start_col), (row, col))
+                        else:
+                            selected_piece = None    
                 
                 if event.button == 3: # not finish
                     if (row, col) in marked_positions:
@@ -153,6 +158,7 @@ while running:
                                 # print(f"\n[Movement is valid]\n")
                                 eat = True if board[row][col] != "" else False
                                 result = selected_piece.move(board, (start_row, start_col), (row, col))
+                                rule.next_player()
 
                                 if selected_piece.name == "K" and abs(col - start_col) == 2:
                                     if col - start_col == 2:

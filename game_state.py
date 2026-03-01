@@ -39,8 +39,7 @@ class GameState:
 
     def save_move_history(self):
         folder_name = "move_history"
-        if not os.path.exists(folder_name):
-            os.makedirs(folder_name)
+        os.makedirs(folder_name, exist_ok=True)
         
         current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         move_history_path = os.path.join(folder_name, current_time + ".txt")
@@ -48,5 +47,16 @@ class GameState:
         with open(move_history_path, "w") as f:
             for move in self.move_history:
                 f.write(move + "\n")
+        
+        files = sorted(
+            [os.path.join(folder_name, f) for f in os.listdir(folder_name)],
+            key=os.path.getmtime
+        )
+
+        MAX_FILES = 20
+
+        while len(files) > MAX_FILES:
+            os.remove(files[0])
+            files.pop(0)
 
 

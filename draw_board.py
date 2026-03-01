@@ -28,11 +28,12 @@ class DrawChessBoard:
     
     def valid_path_draw(self, screen, valid_path, board, is_white_perspective):
         for pos in valid_path:
+            has_piece = board[pos[0]][pos[1]] != ""
             if is_white_perspective:
                 row, col = pos
             else:
                 row, col = self.lattice_num - 1 - pos[0], self.lattice_num - 1 - pos[1]
-            if board[row][col] != "":
+            if has_piece:
                 x = col * self.square_size
                 y = row * self.square_size
                 rect = (x, y, self.square_size, self.square_size)
