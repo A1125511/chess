@@ -3,5 +3,6 @@ __pycache__/
 
 
 Pieces/
+move_history/
 
 test.py
