@@ -1,4 +1,5 @@
 # chess.py
+from king import King
 import pygame
 import random
 from board import ChessBoard
@@ -10,7 +11,8 @@ from path_show import path_show
 
 pygame.init()
 
-WIDTH, HEIGHT = 504, 504
+WIDTH, HEIGHT = 600, 600
+# WIDTH, HEIGHT = 504, 504
 lattice_num = 8
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -21,14 +23,12 @@ DARKGRAY = (169,169,169)
 GRAY_OVERLAY = (0, 0, 0, 180)
 DRAG_THRESHOLD = 5
 
-#is_white_perspective = random.choice([True, False])
-is_white_perspective = True
-
 chessboard = DrawChessBoard(lattice_num, WIDTH, HEIGHT)
 pieces_view = Pieces_view(lattice_num, WIDTH, HEIGHT)
 board = ChessBoard().classic_board()
 
-currentPlayer = GameState().getCurrentPlayer()
+game_state = GameState()
+currentPlayer = game_state.getCurrentPlayer()
 
 running = True
 selected_piece = None
@@ -43,6 +43,10 @@ promotion_need = None
 new_piece = None
 result = None
 valid_path = []
+start_col, start_row = None, None
+end_col, end_row = None, None
+eat = False
+special_move = None
 
 def get_board_position():
     mouseX, mouseY = pygame.mouse.get_pos()
@@ -83,6 +87,7 @@ while running:
             print("r:Rook\n")
             key_name = pygame.key.name(event.key)
             new_piece = Promotion_menu.show(promotion_color, key_name)
+            # print(new_piece.name)
             if new_piece:
                 promotion_pending = False
                 r, c = promotion_pos
@@ -91,6 +96,7 @@ while running:
                 promotion_color = None
                 promotion_pending = False
                 result = None
+                game_state.record_movement(board, new_piece, (start_row, start_col), (row, col), eat, special_move)
 
         if not promotion_pending:
 
@@ -145,7 +151,22 @@ while running:
                                 board[start_row][start_col] = selected_piece
                             else:
                                 # print(f"\n[Movement is valid]\n")
+                                eat = True if board[row][col] != "" else False
                                 result = selected_piece.move(board, (start_row, start_col), (row, col))
+
+                                if selected_piece.name == "K" and abs(col - start_col) == 2:
+                                    if col - start_col == 2:
+                                        special_move = "O-O"      # 王側
+                                    else:
+                                        special_move = "O-O-O"    # 后側
+                                if special_move is None:
+                                    special_move = "promotion" if result == "promotion" else None
+                                if special_move != "promotion":
+                                    game_state.record_movement(board, selected_piece, (start_row, start_col), (row, col), eat, special_move)
+                                else:
+                                    start = (start_row, start_col)
+                                    end = (row, col)
+                                
                                 is_drag = False
                                 selected_pos = None
                             
@@ -165,11 +186,13 @@ while running:
                         selected_piece = None
 
         if event.type == pygame.QUIT:
+            game_state.save_move_history()
             running = False
     
     chessboard.draw(screen, WHITE, DARKGRAY)
-    chessboard.marked_draw(screen, marked_positions,currentPlayer, radius = WIDTH // lattice_num // 2)
-    chessboard.valid_path_draw(screen, valid_path, board)
+    chessboard.draw_coordinates(screen, currentPlayer, WHITE, DARKGRAY)
+    chessboard.marked_draw(screen, marked_positions, currentPlayer, radius = WIDTH // lattice_num // 2)
+    chessboard.valid_path_draw(screen, valid_path, board, currentPlayer)
     pieces_view.draw_pieces(screen, board, currentPlayer, picked_up, selected_piece)
     
     pygame.display.flip()

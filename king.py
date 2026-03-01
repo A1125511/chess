@@ -6,6 +6,7 @@ rule = Rule()
 class King(Piece):
     def __init__(self, color, position):
         super().__init__(color, "K", position, False)
+        self.castling_type = None
     
     def is_valid_move(self, board, start, end):
         start_row, start_col = start
@@ -80,5 +81,3 @@ class King(Piece):
                 return False, None, None, None, None
 
         return True, rook_col, rook_row, step, rook
-
-    

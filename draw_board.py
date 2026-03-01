@@ -26,15 +26,36 @@ class DrawChessBoard:
             center = (col * self.square_size + self.square_size // 2, row * self.square_size + self.square_size // 2)
             pygame.draw.circle(screen, (192, 255, 192), center, radius, 5)
     
-    def valid_path_draw(self, screen, valid_path, board):
+    def valid_path_draw(self, screen, valid_path, board, is_white_perspective):
         for pos in valid_path:
-            if board[pos[0]][pos[1]] != "":
-                x = pos[1] * self.square_size
-                y = pos[0] * self.square_size
+            if is_white_perspective:
+                row, col = pos
+            else:
+                row, col = self.lattice_num - 1 - pos[0], self.lattice_num - 1 - pos[1]
+            if board[row][col] != "":
+                x = col * self.square_size
+                y = row * self.square_size
                 rect = (x, y, self.square_size, self.square_size)
                 pygame.draw.rect(screen, (192, 255, 192), rect, 5)
             else:
-                row, col = pos
                 center = (col * self.square_size + self.square_size // 2, row * self.square_size + self.square_size // 2)
                 pygame.draw.circle(screen, (192, 255, 192), center, 10, 0)
             
+
+    def draw_coordinates(self, screen, is_white_perspective, WHITE, DARKGRAY):
+        font = pygame.font.SysFont("Arial", 20)
+        col_coordinates = [chr(97 + i) for i in range(8)]
+        row_coordinates = [str(i) for i in range(8, 0, -1)]
+        if not is_white_perspective:
+            row_coordinates.reverse()
+            col_coordinates.reverse()
+        for row in range(len(row_coordinates)):
+            x = 0
+            y = row * self.square_size
+            text = font.render(f"{row_coordinates[row]}", True, (0, 0, 0))
+            screen.blit(text, (x, y))
+        for col in range(len(col_coordinates)):
+            x = col * self.square_size + self.square_size - 10
+            y = self.height - 25
+            text = font.render(f"{col_coordinates[col]}", True, (0, 0, 0))
+            screen.blit(text, (x, y))
