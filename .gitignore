@@ -4,6 +4,13 @@ __pycache__/
 
 Pieces/
 move_history/
+build/
+dist/
+*.spec
 
 test.py
 
+# PyInstaller build artifacts
+build/
+dist/
+*.spec

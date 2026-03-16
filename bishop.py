@@ -21,9 +21,9 @@ class Bishop(Piece):
 
             x, y = start_row + step_x, start_col + step_y
             while (x, y) != (end_row, end_col) and 0 <= x < len(board) and 0 <= y < len(board[0]):
-                print("x, y =", x, y)
-                print("len(board) =", len(board))
-                print("len(board[0]) =", len(board[0]))
+                # print("x, y =", x, y)
+                # print("len(board) =", len(board))
+                # print("len(board[0]) =", len(board[0]))
 
                 if board[x][y] != "":
                     return False

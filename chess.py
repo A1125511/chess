@@ -83,10 +83,10 @@ while running:
     for event in pygame.event.get():
 
         if promotion_pending and event.type == pygame.KEYDOWN:
-            print("q:Queen")
-            print("b:Bishop")
-            print("n:Knight")
-            print("r:Rook\n")
+            # print("q:Queen")
+            # print("b:Bishop")
+            # print("n:Knight")
+            # print("r:Rook\n")
             key_name = pygame.key.name(event.key)
             new_piece = Promotion_menu.show(promotion_color, key_name)
             # print(new_piece.name)
@@ -183,7 +183,7 @@ while running:
                                 board[row][col] = selected_piece
                                 print(f"{selected_piece.color} 到達升變格，等待升變輸入...")
                                 
-                            print(f"{selected_piece.name}")
+                            # print(f"{selected_piece.name}")
                             # print(f"{selected_piece.initial_position}")
                             selected_piece = None
                             

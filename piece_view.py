@@ -1,6 +1,7 @@
 #piece_view.py
 import pygame
 import os
+import sys
 
 class Pieces_view:
     def __init__(self, lattice_num, width, height):
@@ -21,7 +22,7 @@ class Pieces_view:
                 pieces_name = f'{color}{piece}'
                 image_path = os.path.join('Pieces', f"{pieces_name}.png")
                 try:
-                    image = pygame.image.load(image_path).convert_alpha()
+                    image = pygame.image.load(self.resource_path(image_path)).convert_alpha()
                     self.pieces[pieces_name] = pygame.transform.scale(image, (image_size, image_size))
                 except pygame.error as e:
                     print(f"Error loading image {image_path}: {e}")
@@ -54,3 +55,10 @@ class Pieces_view:
             if key in self.pieces:
                 screen.blit(self.pieces[key], (mouseX - pos // 2, mouseY - pos // 2))
 
+    @staticmethod
+    def resource_path(relative_path):
+        if hasattr(sys, '_MEIPASS'):
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+        return os.path.join(base_path, relative_path)
