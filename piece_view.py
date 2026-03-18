@@ -55,10 +55,20 @@ class Pieces_view:
             if key in self.pieces:
                 screen.blit(self.pieces[key], (mouseX - pos // 2, mouseY - pos // 2))
 
+
+    # 打包成exe需要
+    # @staticmethod 告訴 Python：「這個方法不需要 self，它只是放在類裡面的一個普通函數。」
     @staticmethod
     def resource_path(relative_path):
+        # 現在是不是被 PyInstaller 打包後在執行？
+
+        # exe 執行
         if hasattr(sys, '_MEIPASS'):
+            # 檔案其實在「暫存資料夾」
+            # 所以要從 _MEIPASS 找 
             base_path = sys._MEIPASS
+        # 用 Python 跑
         else:
+            # 就用「目前資料夾」當作基準
             base_path = os.path.abspath(".")
         return os.path.join(base_path, relative_path)

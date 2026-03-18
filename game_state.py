@@ -6,6 +6,7 @@ class GameState:
     def __init__(self):
         self.is_white_perspective = random.choice([True, False])
         self.move_history = []
+        self.count = 1
     
     def getCurrentPlayer(self):
         return self.is_white_perspective
@@ -36,8 +37,8 @@ class GameState:
                 else:
                     movement = piece.name.upper() + self.pos_to_notation(end[0], end[1])
             self.move_history.append(movement)
-
-    def save_move_history(self):
+    
+    def save_move_history(self, num_player):
         folder_name = "move_history"
         os.makedirs(folder_name, exist_ok=True)
         
@@ -46,7 +47,13 @@ class GameState:
 
         with open(move_history_path, "w") as f:
             for move in self.move_history:
-                f.write(move + "\n")
+                f.write(f"{move:<6}")
+                if self.count == num_player:
+                    f.write("\n")
+                    self.count = 1
+                else:
+                    f.write(" ")
+                    self.count += 1
         
         files = sorted(
             [os.path.join(folder_name, f) for f in os.listdir(folder_name)],

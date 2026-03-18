@@ -49,6 +49,7 @@ start_col, start_row = None, None
 end_col, end_row = None, None
 eat = False
 special_move = None
+num_player = 2
 
 def get_board_position():
     mouseX, mouseY = pygame.mouse.get_pos()
@@ -192,7 +193,7 @@ while running:
                         selected_piece = None
 
         if event.type == pygame.QUIT:
-            game_state.save_move_history()
+            game_state.save_move_history(num_player)
             running = False
     
     chessboard.draw(screen, WHITE, DARKGRAY)

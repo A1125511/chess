@@ -11,4 +11,5 @@ dist/
 *.spec
 
 test.py
-
+graph.md
+.gitignore
