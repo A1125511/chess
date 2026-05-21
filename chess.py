@@ -2,11 +2,14 @@
 from king import King
 import pygame
 import random
+import tkinter as tk
+from tkinter import messagebox
 from board import ChessBoard
 from draw_board import DrawChessBoard
 from piece_view import Pieces_view
 from promotion_menu import Promotion_menu
 from game_state import GameState
+# from game_state import has_legal_move, is_square_attacked
 from path_show import path_show
 from rule import Rule
 
@@ -18,6 +21,10 @@ lattice_num = 8
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("chess")
+
+# Create a Tkinter root window for the confirmation dialog
+tk_root = tk.Tk()
+tk_root.withdraw()  # Hide the main Tkinter window
 
 WHITE = (255,255,255)
 DARKGRAY = (169,169,169)
@@ -50,6 +57,9 @@ end_col, end_row = None, None
 eat = False
 special_move = None
 num_player = 2
+game_over_check_needed = False
+last_moved_color = None
+move_count = 0
 
 def get_board_position():
     mouseX, mouseY = pygame.mouse.get_pos()
@@ -92,6 +102,7 @@ while running:
             new_piece = Promotion_menu.show(promotion_color, key_name)
             # print(new_piece.name)
             if new_piece:
+                last_moved_color = promotion_color
                 promotion_pending = False
                 r, c = promotion_pos
                 board[r][c] = new_piece
@@ -99,6 +110,7 @@ while running:
                 promotion_color = None
                 promotion_pending = False
                 result = None
+                game_over_check_needed = True
                 game_state.record_movement(board, new_piece, (start_row, start_col), (row, col), eat, special_move)
 
         if not promotion_pending:
@@ -160,6 +172,7 @@ while running:
                                 eat = True if board[row][col] != "" else False
                                 result = selected_piece.move(board, (start_row, start_col), (row, col))
                                 rule.next_player()
+                                special_move = None
 
                                 if selected_piece.name == "K" and abs(col - start_col) == 2:
                                     if col - start_col == 2:
@@ -170,20 +183,32 @@ while running:
                                     special_move = "promotion" if result == "promotion" else None
                                 if special_move != "promotion":
                                     game_state.record_movement(board, selected_piece, (start_row, start_col), (row, col), eat, special_move)
+                                    last_moved_color = selected_piece.color
+                                    game_over_check_needed = True
                                 else:
                                     start = (start_row, start_col)
                                     end = (row, col)
                                 
                                 is_drag = False
                                 selected_pos = None
-                            
+                                pawn_moved = (selected_piece.name == "p")
+                                
+                                if eat or pawn_moved:
+                                    move_count = 0
+                                else:
+                                    move_count += 1
+                                
+                                if move_count >= 100:
+                                    print(f"[Draw by 50-move rule]\n")
+                                    running = False
+                        
                             if result == "promotion":
                                 promotion_pending = True
                                 promotion_pos = (row, col)
                                 promotion_color = selected_piece.color
                                 board[row][col] = selected_piece
                                 print(f"{selected_piece.color} 到達升變格，等待升變輸入...")
-                                
+                          
                             # print(f"{selected_piece.name}")
                             # print(f"{selected_piece.initial_position}")
                             selected_piece = None
@@ -195,7 +220,7 @@ while running:
         if event.type == pygame.QUIT:
             game_state.save_move_history(num_player)
             running = False
-    
+
     chessboard.draw(screen, WHITE, DARKGRAY)
     chessboard.draw_coordinates(screen, currentPlayer, WHITE, DARKGRAY)
     chessboard.marked_draw(screen, marked_positions, currentPlayer, radius = WIDTH // lattice_num // 2)
@@ -203,5 +228,25 @@ while running:
     pieces_view.draw_pieces(screen, board, currentPlayer, picked_up, selected_piece)
     
     pygame.display.flip()
+
+    if game_over_check_needed:
+        enemy_color = "b" if last_moved_color == "w" else "w"
+
+        state = game_state.board_to_string(board, enemy_color)
+        game_state.position_history[state] = game_state.position_history.get(state, 0) + 1
+        
+        if game_state.position_history[state] >= 3:
+            messagebox.showinfo("遊戲結束", "Draw! (Threefold Repetition)")
+        
+        elif not game_state.has_legal_move(board, enemy_color):
+            for r in range(lattice_num):
+                for c in range(lattice_num):
+                    if board[r][c] != "" and board[r][c].color == enemy_color and board[r][c].name == "K":
+                        if game_state.is_square_attacked(board, (r, c), last_moved_color):
+                            messagebox.showinfo("遊戲結束", "Checkmate!")
+                        else:
+                            messagebox.showinfo("遊戲結束", "Stalemate!")
+                        running = False
+        game_over_check_needed = False  # 重置旗標，只檢查一次
     
 pygame.quit()

@@ -5,10 +5,15 @@ class Rule:
 
     def player_turn(self, current_player):
         current_state = self.state[self.index]
+        """
         if current_player == current_state:
             return True
         else:
             return False
+        """
+        # testing
+        return True
 
+    # 回合數 / num_player
     def next_player(self):
         self.index = (self.index + 1) % 2

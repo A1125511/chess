@@ -1,2 +1,14 @@
-click and move
-check
+# 第一階段：完善核心規則
+[-] 判斷某個格子是否被敵方攻擊
+[-] 將軍判定 (Check)：移動後不能讓自己的國王處於被攻擊狀態
+[-] 將死判定 (Checkmate)：被將軍且無合法步
+[-] 逼和判定 (Stalemate)：未被將軍且無合法步
+[-] 50 步規則與三次重複局面 (Draw conditions)
+[ ] 死局（Insufficient Material）
+
+# 第二階段：AI 環境封裝
+[ ] 無頭模式 (Headless Mode)：分離 UI (pygame) 與核心邏輯
+[ ] 模擬與還原 (make_move & undo_move)：快速測試和退回移動
+[ ] 取得動作清單 (get_legal_moves)：回傳當前玩家所有合法步
+[ ] 將狀態轉換成 AI 矩陣 (State representation)
+[ ] 封裝 OpenAI Gym 介面 (step, reset)

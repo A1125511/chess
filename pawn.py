@@ -1,5 +1,6 @@
 # pawn.py
 from piece import Piece
+from game_state import GameState
 
 class Pawn(Piece):
     en_passant_target = None
@@ -14,7 +15,8 @@ class Pawn(Piece):
             return True, Pawn.en_passant_target, Pawn.en_passant_pawn
         return False, Pawn.en_passant_target, Pawn.en_passant_pawn
 
-    def set_current_en_passant(self, en_passant_target, pawn, color):
+    @staticmethod
+    def set_current_en_passant(en_passant_target, pawn, color):
         Pawn.en_passant_target = en_passant_target
         Pawn.en_passant_pawn = pawn
         Pawn.en_passant_pawn_color = color  
@@ -46,11 +48,15 @@ class Pawn(Piece):
             if board[start_row + direction][start_col] == "" and board[end_row][end_col] == "":
                 self.en_passant = (start_row + direction, start_col)
                 # print(f"建立 {self.en_passant}")
+                if not GameState.is_safe_move(board, self, start, end):
+                    return False
                 return True
         
         # 移動
         if start_col == end_col and end_row == start_row + direction:
             if board[end_row][end_col] == "":
+                if not GameState.is_safe_move(board, self, start, end):
+                    return False
                 return True
         
         # 吃
@@ -65,8 +71,29 @@ class Pawn(Piece):
             # print(f"{self.check_en_passant(start, end,)}")
             
             if board[end_row][end_col] != "" and board[end_row][end_col].color != self.color:
+                if not GameState.is_safe_move(board, self, start, end):
+                    return False
                 return True
             elif en_passant:
+                captured_pawn_piece = board[remove_pawn_x][remove_pawn_y]
+
+                # 手動模擬, 不依靠is_safe_move
+                board[end_row][end_col] = self
+                board[start_row][start_col] = ""
+                board[remove_pawn_x][remove_pawn_y] = ""
+                
+                attacker_color = "b" if self.color == "w" else "w"
+                king_pos = next((r, c) for r in range(8) for c in range(8)
+                    if board[r][c] != "" and board[r][c].color == self.color and board[r][c].name == "K")
+                safe = not GameState.is_square_attacked(board, king_pos, attacker_color)
+                
+                board[start_row][start_col] = self
+                board[end_row][end_col] = ""
+                if remove_pawn is not None:
+                    board[remove_pawn_x][remove_pawn_y] = captured_pawn_piece
+
+                if not safe:
+                    return False
                 return True
             
             # print(f"{self.check_en_passant(start, end)}")
@@ -91,10 +118,10 @@ class Pawn(Piece):
             else:
                 remove_pawn_x, remove_pawn_y = None, None
             
-            print(f"吃過路兵 {target}")
+            # print(f"吃過路兵 {target}")
             # print(f"{self.check_en_passant(start, end)}")
             board[remove_pawn_x][remove_pawn_y] = ""
-            self.set_current_en_passant(None, None, None)
+            Pawn.set_current_en_passant(None, None, None)
         
         board[end_row][end_col] = self
         board[start_row][start_col] = ""
@@ -103,4 +130,16 @@ class Pawn(Piece):
 
         if promotion:
             return "promotion"
+    
+    def get_attacked_squares(self, board, start):
+        start_row, start_col = start
+        attacked_squares = []
+        direction = -1 if self.color == "w" else 1
+        
+        if 0 <= start_row + direction < 8 and 0 <= start_col - 1 < 8:
+            attacked_squares.append((start_row + direction, start_col - 1))
+        if 0 <= start_row + direction < 8 and 0 <= start_col + 1 < 8:
+            attacked_squares.append((start_row + direction, start_col + 1))
 
+        return attacked_squares
+    
